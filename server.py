@@ -4,13 +4,14 @@ import socketserver
 import traceback
 
 
+# commands for testing server: telnet 59.57.247.184 8105
 class MyTCPHandler(socketserver.StreamRequestHandler):
 
     def handle(self):
         while True:
             try:
                 #data = self.rfile.readline()
-                data = self.request.recv(10240)
+                data = self.request.recv(1024)
                 if not data:
                     break
                 output = ""

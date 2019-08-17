@@ -4,13 +4,14 @@
 
 def process_message(data):
     if data[0] != 0x23 or data[1] != 0x23:
+        print("首字节非2323!")
         return False
     if data[2] == 0x23:
         pass
 
 
 def main():
-    with open("binlog.txt", "rb+") as binfile:
+    with open("virtuallog.txt", "rb+") as binfile:
         data = binfile.read()
     checkres = 0
     output = ""
