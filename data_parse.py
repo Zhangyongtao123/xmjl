@@ -4,6 +4,8 @@ import socketserver
 import json
 import traceback
 
+import requests
+
 from utils import check_sum, current_time, extract_data_unit, print_0x, bytes_time_to_fmt_time, process_flag
 
 
@@ -454,6 +456,12 @@ class DataParse(socketserver.StreamRequestHandler):
         print(json_store_data)
         with open("Json_data.txt", "a+") as logfile:
             logfile.write(json_store_data + '\n')
+        # headers中添加上content-type这个参数，指定为json格式
+        headers = {'Content-Type': 'application/json'}
+
+        # post的时候，将data字典形式的参数用json包转换成json格式
+        response = requests.post(url='http://localhost:5000', headers=headers, data=json_store_data)
+        print("response: ", response)
 
 
 if __name__ == '__main__':
