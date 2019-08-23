@@ -41,7 +41,7 @@ class DataParse(socketserver.StreamRequestHandler):
                 # with open(str(self.client_address[1]) + "_" + str(count) + "_binlog.txt", "wb+") as f:
                 #    f.write(data)
                 # with open(str(self.client_address[1]) + "_" + str(count) + "_strlog.txt", "w+") as e:
-                    # print("exe")
+                # print("exe")
                 #    e.write(output)
                 # with open("binlog.txt", "wb+") as f:
                 #     f.write(data)
@@ -220,7 +220,7 @@ class DataParse(socketserver.StreamRequestHandler):
             else:
                 print("此包不需要应答")
         elif data[2] <= 0x7F & data[2] >= 0x09:
-            print("命令标识： 上行数据系统预留")   
+            print("命令标识： 上行数据系统预留")
             # 处理应答位
             if data[3] == 0xFE:
                 print("是否应答： 需要应答！应答未定！")
@@ -442,11 +442,11 @@ class DataParse(socketserver.StreamRequestHandler):
                 print("用户自定义数据，数据类型码： ", data_type)
                 break
             else:
-                print("无法识别数据类型！数据类型码：",data_type)
+                print("无法识别数据类型！数据类型码：", data_type)
                 break
         print("数据读取完成！")
         json_store_data_ = [{"VIN": VIN, "upload_type": upload_type, "time": data_collection_time,
-                             "vehi_status": vehi_status, "vehi_speed": vehi_speed,"SOC": SOC, "loc_status": loc_status,
+                             "vehi_status": vehi_status, "vehi_speed": vehi_speed, "SOC": SOC, "loc_status": loc_status,
                              "latitude_direction": latitude_direction, "longitude_direction": longitude_direction,
                              "lati_val": latitude_val, "longi_val": longitude_val, "caution_level": top_caution_level,
                              "caution_flag": universal_caution_flag, "ori_data": str(data)
@@ -459,9 +459,12 @@ class DataParse(socketserver.StreamRequestHandler):
         # headers中添加上content-type这个参数，指定为json格式
         headers = {'Content-Type': 'application/json'}
 
-        # post的时候，将data字典形式的参数用json包转换成json格式
-        response = requests.post(url='http://localhost:5000', headers=headers, data=json_store_data)
-        print("response: ", response)
+        try:
+            # post的时候，将data字典形式的参数用json包转换成json格式
+            response = requests.post(url='http://localhost:5000', headers=headers, data=json_store_data)
+            print("response: ", response)
+        except requests.exceptions.ConnectionError:
+            print("传输异常！本地http服务端未开启")
 
 
 if __name__ == '__main__':
