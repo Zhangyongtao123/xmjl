@@ -347,7 +347,7 @@ class DataParse(socketserver.StreamRequestHandler):
         # ------------------------------ 通用数据 -------------------------------------------
         # 原始数据data
         # 提取车辆VIN码
-        VIN = data[4:20]
+        VIN = data[4:21]
         VIN = str(VIN)
         # 数据单元
         data_unit, data_unit_length = extract_data_unit(data, False)
