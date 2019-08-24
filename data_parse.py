@@ -445,12 +445,12 @@ class DataParse(socketserver.StreamRequestHandler):
                 print("无法识别数据类型！数据类型码：", data_type)
                 break
         print("数据读取完成！")
-        json_store_data_ = [{"VIN": VIN, "upload_type": upload_type, "time": data_collection_time,
+        json_store_data_ = {"VIN": VIN, "upload_type": upload_type, "time": data_collection_time,
                              "vehi_status": vehi_status, "vehi_speed": vehi_speed, "SOC": SOC, "loc_status": loc_status,
                              "latitude_direction": latitude_direction, "longitude_direction": longitude_direction,
                              "lati_val": latitude_val, "longi_val": longitude_val, "caution_level": top_caution_level,
                              "caution_flag": universal_caution_flag, "ori_data": str(data)
-                             }]
+                             }
         json_store_data = json.dumps(json_store_data_, indent=4, separators=(',', ': '))
         print("保存数据：")
         print(json_store_data)
