@@ -75,7 +75,7 @@ def str2hex(s):
 
 def bytes_time_to_fmt_time(time_bytes):
     fmt_time = "20" + str(time_bytes[0]) + "-" + str(time_bytes[1]) + "-" + str(time_bytes[2]) + " " \
-               + str(time_bytes[3]) + ":" + str(time_bytes[4]) + ":" + str(time_bytes[5]) + ":"
+               + str(time_bytes[3]) + ":" + str(time_bytes[4]) + ":" + str(time_bytes[5])
     return fmt_time
 
 

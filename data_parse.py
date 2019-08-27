@@ -31,7 +31,7 @@ class DataParse(socketserver.StreamRequestHandler):
                 # data = mybytes
                 if not data:
                     break
-                output = print_0x(data, False)
+                output = print_0x(data, True, False)
                 print('\n收到数据(%r):' % (self.client_address,))
                 print(output)
 
@@ -49,8 +49,8 @@ class DataParse(socketserver.StreamRequestHandler):
                 #     e.write(output)
                 # print("data: " + data.hex())
                 # print(type(data))
-                print("应答数据:")
                 if reply != -1 and reply != None and reply != 0:
+                    print("应答数据:")
                     print_0x(reply)
                     self.request.sendall(reply)
 
@@ -73,9 +73,9 @@ class DataParse(socketserver.StreamRequestHandler):
         loc_status = "valid_loc" if (loc_status_flag & 0x01) == 0x00 else "invalid_loc"
         latitude_direction = "north" if (loc_status_flag & 0x02) == 0x00 else "south"
         longitude_direction = "east" if (loc_status_flag & 0x04) == 0x00 else "west"
-        latitude_val = (data_unit[marker_len + 2] * 0x1000000 + data_unit[marker_len + 3] * 0x10000
+        longitude_val = (data_unit[marker_len + 2] * 0x1000000 + data_unit[marker_len + 3] * 0x10000
                         + data_unit[marker_len + 4] * 0x100 + data_unit[marker_len + 5]) / 1000000.0
-        longitude_val = (data_unit[marker_len + 6] * 0x1000000 + data_unit[marker_len + 7] * 0x10000
+        latitude_val = (data_unit[marker_len + 6] * 0x1000000 + data_unit[marker_len + 7] * 0x10000
                          + data_unit[marker_len + 8] * 0x100 + data_unit[marker_len + 9]) / 1000000.0
         # loc_data = latitude_direction + str(latitude_val) + "度, " + longitude_direction + str(longitude_val) + "度"
         latitude_val = str(latitude_val)
@@ -148,7 +148,8 @@ class DataParse(socketserver.StreamRequestHandler):
             return -1
 
         # 提取车辆VIN码
-        VIN = data[4:20]
+        VIN = data[4:21]
+        VIN = str(VIN,encoding="utf-8")
         print("VIN: ", VIN)
 
         # 提取加密方式
@@ -179,6 +180,7 @@ class DataParse(socketserver.StreamRequestHandler):
                 print("是否应答： 不需要应答")
         elif data[2] == 0x03:
             print("命令标识： 补发信息上报")
+            DataParse.data_store_to_hbase(data)
             # 处理应答位
             if data[3] == 0xFE:
                 print("是否应答： 需要应答！")
@@ -329,6 +331,7 @@ class DataParse(socketserver.StreamRequestHandler):
         else:
             print("数据校验错误！")
             return -1
+        data[23] = 6
         data[24] = time_now[0] % 2000
         data.append(time_now[1])
         data.append(time_now[2])
@@ -348,11 +351,11 @@ class DataParse(socketserver.StreamRequestHandler):
         # 原始数据data
         # 提取车辆VIN码
         VIN = data[4:21]
-        VIN = str(VIN)
+        VIN = str(VIN,encoding="utf-8")
         # 数据单元
         data_unit, data_unit_length = extract_data_unit(data, False)
         # 数据类型：车辆登入、实时信息上报、心跳
-        data_flag_list = ["车辆登入", "realtime_upload ", "supplementary_upload", "车辆登出", "平台登入",
+        data_flag_list = ["车辆登入", "realtime_upload", "supplementary_upload", "车辆登出", "平台登入",
                           "平台登出", "终端数据预留（上行）", "上行数据系统预留", "终端数据预留（下行）",
                           "下行数据系统预留", "平台自定义数据", "命令标识无法识别!"]
         flag = process_flag(data)
@@ -433,16 +436,20 @@ class DataParse(socketserver.StreamRequestHandler):
                 marker_len += recharge_tem_sys_units_len + 1
 
             elif data_type <= 0x2F and data_type >= 0x0A:
-                print("平台交换协议数据，数据类型码： ", data_type)
+                print("平台交换协议, 数据类型码： ", data_type)
+                print("平台交换协议数据起始点：",marker_len)
                 break
             elif data_type <= 0x7F and data_type >= 0x30:
-                print("预留数据，数据类型码： ", data_type)
+                print("预留数据类型码： ", data_type)
+                print("预留数据起始点：",marker_len)
                 break
             elif data_type <= 0xFE and data_type >= 0x80:
-                print("用户自定义数据，数据类型码： ", data_type)
+                print("用户自定义数据类型码： ", data_type)
+                print("用户自定义数据起始点:",marker_len)
                 break
             else:
-                print("无法识别数据类型！数据类型码：", data_type)
+                print("无法识别数据类型! 数据类型码：", data_type)
+                print("无法识别数据类型起始点:", marker_len)
                 break
         print("数据读取完成！")
         json_store_data_ = {"VIN": VIN, "upload_type": upload_type, "time": data_collection_time,
